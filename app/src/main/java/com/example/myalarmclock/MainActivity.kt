@@ -7,14 +7,37 @@ import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import java.util.Calendar.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),TimeAlertDialog.Listener {
+
+    override fun getUp() {
+        //Toast.makeText(this,"起きるがクリックされました",Toast.LENGTH_SHORT)
+        //    .show()
+        finish()
+    }
+
+    override fun snooze() {
+        //Toast.makeText(this,"あと５分寝るがクリックされました",Toast.LENGTH_SHORT)
+        //    .show()
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = System.currentTimeMillis()
+        calendar.add(Calendar.MINUTE,5)
+        setAlarmManager(calendar)
+        finish()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if(intent?.getBooleanExtra(ON_RECEIVE,false) == true){
+            val dialog = TimeAlertDialog()
+            dialog.show(supportFragmentManager,"alert_dialog")
+        }
+
         setContentView(R.layout.activity_main)
 
         setAlarm.setOnClickListener{
@@ -23,6 +46,10 @@ class MainActivity : AppCompatActivity() {
             println("now:" + calendar.timeInMillis)
             calendar.add(SECOND,5)
             setAlarmManager(calendar)
+        }
+
+        cancelAlarm.setOnClickListener{
+            cancelAlarmManager()
         }
     }
 
@@ -47,7 +74,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun cancelAlarmManager(){
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//        val intent = Intent(this)
-
+        val intent = Intent(this,AlarmBroadcastReceiber::class.java)
+        val pending = PendingIntent.getBroadcast(this,0,intent,0)
+        am.cancel(pending)
     }
 }
