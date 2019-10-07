@@ -3,10 +3,13 @@ package com.example.myalarmclock
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.widget.DatePicker
+import android.widget.TimePicker
 import androidx.fragment.app.DialogFragment
+import java.time.MonthDay
 import java.util.*
 
 class TimeAlertDialog : DialogFragment(){
@@ -83,4 +86,32 @@ class DatePickerFragment:DialogFragment(),
         listener?.onSelected(year,month,dayOfMonth)
     }
 
+}
+
+class TimePickerFragment:DialogFragment(),
+        TimePickerDialog.OnTimeSetListener{
+
+    interface OntimeSelectedListener{
+        fun onSelected(hourOfDay:Int,minute:Int)
+    }
+
+    private var listener:OntimeSelectedListener? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        when (context){
+            is OntimeSelectedListener -> listener = context
+        }
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val c = Calendar.getInstance()
+        val hour = c.get(Calendar.HOUR)
+        val minute = c.get(Calendar.MINUTE)
+        return TimePickerDialog(context,this,hour,minute,true)
+    }
+
+    override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+        listener?.onSelected(hourOfDay,minute)
+    }
 }
